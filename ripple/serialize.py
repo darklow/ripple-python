@@ -566,6 +566,14 @@ class RippleBaseDecoder(object):
         return cls.encode_base(bytes)
 
     @classmethod
+    def encode_seed(cls, data):
+        """Apply base58 encode including version, checksum."""
+        version = bytearray([33])
+        bytes = version + data
+        bytes += sha256(sha256(bytes).digest()).digest()[:4]   # checksum
+        return cls.encode_base(bytes)
+
+    @classmethod
     def encode_base(cls, data):
         # https://github.com/jgarzik/python-bitcoinlib/blob/master/bitcoin/base58.py
         # Convert big-endian bytes to integer
