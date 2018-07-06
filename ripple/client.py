@@ -225,7 +225,7 @@ class Client(object):
         """Runs the reading thread."""
         try:
             while not getattr(self, '_shutdown', False):
-                msg = json.loads(self.conn.recv().decode('utf-8'))
+                msg = json.loads(self.conn.recv())
                 log.debug('<<<<<<<< receiving % s', json.dumps(msg, indent=2))
 
                 type = msg['type']
@@ -570,7 +570,7 @@ class Remote(object):
             # Success - proposed disposition.
             # JS client will emit an unused proposed event and then will
             # simply watch the transaction stream to confirm.
-            self._pending_transactions[txhash] = pending
+            self._pending_transactions[str(txhash, 'utf-8')] = pending
         elif error_cat == 'tef':
             # 'Failure': JS client will error out the transaction, unless
             # the message is tefPAST_SEQ: then it will resubmit three
