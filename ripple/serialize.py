@@ -69,7 +69,8 @@ TRANSACTION_TYPES = {
     'Contract': 9,
     'RemoveContract': 10,
     'EnableFeature': 100,
-    'SetFee': 101
+    'SetFee': 101,
+    'SignerListSet': 12,
 }
 
 
@@ -112,7 +113,8 @@ FIELDS_MAP = {
     # Common types
     1: {# Int16
         1: 'LedgerEntryType',
-        2: 'TransactionType'
+        2: 'TransactionType',
+        3: 'SignerWeight',
     },
     2: {# Int32
         2: 'Flags', 3: 'SourceTag', 4: 'Sequence', 5: 'PreviousTxnLgrSeq',
@@ -129,7 +131,7 @@ FIELDS_MAP = {
         27: 'LastLedgerSequence', 28: 'TransactionIndex',
         29: 'OperationLimit', 30: 'ReferenceFeeUnits', 31: 'ReserveBase',
         32: 'ReserveIncrement',
-        33: 'SetFlag', 34: 'ClearFlag',
+        33: 'SetFlag', 34: 'ClearFlag', 35: 'SignerQuorum',
     },
     3: {#  Int64
         1: 'IndexNext', 2: 'IndexPrevious', 3: 'BookNode', 4: 'OwnerNode',
@@ -166,11 +168,11 @@ FIELDS_MAP = {
          2: 'TransactionMetaData', 3: 'CreatedNode', 4: 'DeletedNode',
          5: 'ModifiedNode',
          6: 'PreviousFields', 7: 'FinalFields', 8: 'NewFields',
-         9: 'TemplateEntry',
+         9: 'TemplateEntry', 11: 'SignerEntry',
     },
     15: {# Array
          1: None, # end of Array
-         2: 'SigningAccounts', 3: 'TxnSignatures', 4: 'Signatures',
+         2: 'SigningAccounts', 3: 'TxnSignatures', 4: 'SignerEntries',
          5: 'Template',
          6: 'Necessary', 7: 'Sufficient', 8: 'AffectedNodes',
     },
@@ -434,6 +436,12 @@ class TypeSerializers:
             serialize_field(stream, key, value[key])
         if not no_marker:
             TypeSerializers.STInt8(stream, 0xe1)  # Object ending marker
+
+    def STArray(stream, value, no_marker=False):
+        for obj in value:
+            TypeSerializers.STObject(stream, obj, no_marker=True)
+        if not no_marker:
+            TypeSerializers.STInt8(stream, 0xf1)  # Array ending marker
 
 
 def sort_fields(keys):
