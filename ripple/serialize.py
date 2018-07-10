@@ -145,7 +145,7 @@ FIELDS_MAP = {
         4: 'AccountHash', 5: 'PreviousTxnID',
         6: 'LedgerIndex', 7: 'WalletLocator', 8: 'RootIndex',
         16: 'BookDirectory', 17: 'InvoiceID',
-        18: 'Nickname', 19: 'Feature'
+        18: 'Nickname', 19: 'Feature', 257: 'hash',
     },
     6: {# Amount
         1: 'Amount', 2: 'Balance', 3: 'LimitAmount', 4: 'TakerPays',
@@ -168,11 +168,11 @@ FIELDS_MAP = {
          2: 'TransactionMetaData', 3: 'CreatedNode', 4: 'DeletedNode',
          5: 'ModifiedNode',
          6: 'PreviousFields', 7: 'FinalFields', 8: 'NewFields',
-         9: 'TemplateEntry', 11: 'SignerEntry',
+         9: 'TemplateEntry', 11: 'SignerEntry', 16: 'Signer',
     },
     15: {# Array
          1: None, # end of Array
-         2: 'SigningAccounts', 3: 'TxnSignatures', 4: 'SignerEntries',
+         2: 'SigningAccounts', 3: 'Signers', 4: 'SignerEntries',
          5: 'Template',
          6: 'Necessary', 7: 'Sufficient', 8: 'AffectedNodes',
     },

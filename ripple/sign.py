@@ -11,7 +11,8 @@ from binascii import hexlify
 from ecdsa import curves, SigningKey, six
 from ecdsa.util import sigencode_der
 from .serialize import (
-    to_bytes, from_bytes, RippleBaseDecoder, serialize_object, fmt_hex)
+    to_bytes, from_bytes, RippleBaseDecoder, serialize_object, fmt_hex,
+    UInt160)
 
 
 __all__ = ('sign_transaction', 'signature_for_transaction')
@@ -33,7 +34,7 @@ def sign_transaction(transaction, secret, flag_canonical=True):
     return transaction
 
 
-def signature_for_transaction(transaction, secret):
+def signature_for_transaction(transaction, secret, ismulti=False):
     """Calculate the fully-canonical signature of the transaction.
 
     Will set the ``SigningPubKey`` as appropriate before signing.
@@ -44,13 +45,16 @@ def signature_for_transaction(transaction, secret):
     """
     seed = parse_seed(secret)
     key = root_key_from_seed(seed)
+    
 
     # Apparently the pub key is required to be there.
-    transaction['SigningPubKey'] = fmt_hex(ecc_point_to_bytes_compressed(
-        key.privkey.public_key.point, pad=True))
+    if not ismulti:
+        transaction['SigningPubKey'] = fmt_hex(ecc_point_to_bytes_compressed(
+            key.privkey.public_key.point, pad=True))
 
     # Convert the transaction to a binary representation
-    signing_hash = create_signing_hash(transaction)
+    signerid = get_ripple_from_secret(secret)
+    signing_hash = create_signing_hash(transaction, multi_signer=signerid)
 
     # Create a hex-formatted signature.
     return fmt_hex(ecdsa_sign(key, signing_hash))
@@ -155,24 +159,25 @@ def get_ripple_from_secret(seed):
 # From ripple-lib:hashprefixes.js
 HASH_TX_ID = 0x54584E00; # 'TXN'
 HASH_TX_SIGN = 0x53545800  # 'STX'
-HASH_TX_SIGN_TESTNET = 0x73747800 # 'stx'
+HASH_TX_SIGN_MULTI = 0x534D5400 # 'SMT'
 
-def create_signing_hash(transaction, testnet=False):
+def create_signing_hash(transaction, multi_signer=None):
     """This is the actual value to be signed.
 
     It consists of a prefix and the binary representation of the
     transaction.
     """
-    prefix = HASH_TX_SIGN_TESTNET if testnet else HASH_TX_SIGN
-    return hash_transaction(transaction, prefix)
+    prefix = HASH_TX_SIGN_MULTI if multi_signer else HASH_TX_SIGN
+    return hash_transaction(transaction, prefix, multi_signer)
 
 
-def hash_transaction(transaction, prefix):
+def hash_transaction(transaction, prefix, multi_signer=None):
     """Create a hash of the transaction and the prefix.
     """
-    binary = first_half_of_sha512(
-        to_bytes(prefix, 4) +
-        serialize_object(transaction, hex=False))
+    buff = to_bytes(prefix, 4) + serialize_object(transaction, hex=False)
+    if multi_signer:
+        buff += UInt160(multi_signer)
+    binary = first_half_of_sha512(buff)
     return hexlify(binary).upper()
 
 
