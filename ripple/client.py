@@ -281,9 +281,9 @@ class Client(object):
         data = {k:v for k, v in data.items() if v is not None}
 
         log.debug('>>>>>>>> sending %s', json.dumps(data, indent=2, cls=RippleEncoder))
-        self.conn.send(json.dumps(data, cls=RippleEncoder).encode('utf-8'))
         with self.callbacks_lock:
             self.callbacks[data['id']] = DeferredResponse()
+            self.conn.send(json.dumps(data, cls=RippleEncoder).encode('utf-8'))
         msg = self.callbacks[data['id']].wait()
         return msg
 
