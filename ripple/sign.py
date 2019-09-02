@@ -54,7 +54,7 @@ def signature_for_transaction(transaction, secret, ismulti=False):
 
     # Convert the transaction to a binary representation
     signerid = get_ripple_from_secret(secret)
-    signing_hash = create_signing_hash(transaction, multi_signer=signerid)
+    signing_hash = create_signing_hash(transaction, multi_signer=signerid if ismulti else None)
 
     # Create a hex-formatted signature.
     return fmt_hex(ecdsa_sign(key, signing_hash))
