@@ -5,10 +5,10 @@ library and used on its own.
 See also:
     https://ripple.com/wiki/User:Singpolyma/Transaction_Signing
 """
-
+import six
 import hashlib
 from binascii import hexlify
-from ecdsa import curves, SigningKey, six
+from ecdsa import curves, SigningKey
 from ecdsa.util import sigencode_der
 from .serialize import (
     to_bytes, from_bytes, RippleBaseDecoder, serialize_object, fmt_hex,
